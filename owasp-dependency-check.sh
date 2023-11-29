@@ -1,11 +1,15 @@
 #!/bin/sh
 
+# Dependency-Check version
 DC_VERSION="latest"
-DC_DIRECTORY=$HOME/OWASP-Dependency-Check
+
+# Directory setup
+DC_DIRECTORY="$HOME/OWASP-Dependency-Check"
 DC_PROJECT="dependency-check scan: $(pwd)"
 DATA_DIRECTORY="$DC_DIRECTORY/data"
 CACHE_DIRECTORY="$DC_DIRECTORY/data/cache"
 
+# Ensure persistent directories exist
 if [ ! -d "$DATA_DIRECTORY" ]; then
     echo "Initially creating persistent directory: $DATA_DIRECTORY"
     mkdir -p "$DATA_DIRECTORY"
@@ -15,9 +19,10 @@ if [ ! -d "$CACHE_DIRECTORY" ]; then
     mkdir -p "$CACHE_DIRECTORY"
 fi
 
-# Make sure we are using the latest version
+# Make sure we are using the latest version of Dependency-Check Docker image
 docker pull owasp/dependency-check:$DC_VERSION
 
+# Run Dependency-Check
 docker run --rm \
     -e user=$USER \
     -u $(id -u ${USER}):$(id -g ${USER}) \
