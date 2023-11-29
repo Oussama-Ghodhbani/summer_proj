@@ -29,5 +29,6 @@ docker run --rm \
     --format "ALL" \
     --project "$DC_PROJECT" \
     --out /report
-    # Use suppression like this: (where /src == $pwd)
-    # --suppression "/src/security/dependency-check-suppression.xml"
+
+# Set permissions for all users on the data directory
+sudo chmod -R a+rwx "$DATA_DIRECTORY"
