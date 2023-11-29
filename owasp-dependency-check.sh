@@ -1,32 +1,33 @@
-#!/bin/bash
+#!/bin/sh
 
-# Define Dependency-Check version
 DC_VERSION="latest"
-
-# Define directories
-DC_DIRECTORY="/var/lib/jenkins/OWASP-Dependency-Check"
+DC_DIRECTORY=$HOME/OWASP-Dependency-Check
+DC_PROJECT="dependency-check scan: $(pwd)"
 DATA_DIRECTORY="$DC_DIRECTORY/data"
-CACHE_DIRECTORY="$DATA_DIRECTORY/cache"
-REPORT_DIRECTORY="$DC_DIRECTORY/reports"
+CACHE_DIRECTORY="$DC_DIRECTORY/data/cache"
 
-# Create necessary directories if they don't exist
-mkdir -p "$DATA_DIRECTORY"
-mkdir -p "$CACHE_DIRECTORY"
-mkdir -p "$REPORT_DIRECTORY"
+if [ ! -d "$DATA_DIRECTORY" ]; then
+    echo "Initially creating persistent directory: $DATA_DIRECTORY"
+    mkdir -p "$DATA_DIRECTORY"
+fi
+if [ ! -d "$CACHE_DIRECTORY" ]; then
+    echo "Initially creating persistent directory: $CACHE_DIRECTORY"
+    mkdir -p "$CACHE_DIRECTORY"
+fi
 
-# Pull the latest Dependency-Check Docker image
+# Make sure we are using the latest version
 docker pull owasp/dependency-check:$DC_VERSION
 
-# Run Dependency-Check scan
 docker run --rm \
-    -u $(id -u):$(id -g) \
-    -e HOME=/tmp \
-    -v "$(pwd)":/src \
-    -v "$DATA_DIRECTORY":/usr/share/dependency-check/data \
-    -v "$CACHE_DIRECTORY":/usr/share/dependency-check/data/cache \
-    -v "$REPORT_DIRECTORY":/report \
+    -e user=$USER \
+    -u $(id -u ${USER}):$(id -g ${USER}) \
+    --volume $(pwd):/src:z \
+    --volume "$DATA_DIRECTORY":/usr/share/dependency-check/data:z \
+    --volume $(pwd)/odc-reports:/report:z \
     owasp/dependency-check:$DC_VERSION \
     --scan /src \
-    --format "XML" \
-    --project "My Project" \
-    --out /report/dependency-check-report.xml
+    --format "ALL" \
+    --project "$DC_PROJECT" \
+    --out /report
+    # Use suppression like this: (where /src == $pwd)
+    # --suppression "/src/security/dependency-check-suppression.xml"
